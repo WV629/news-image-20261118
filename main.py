@@ -31,8 +31,16 @@ def main():
     if not os.path.isfile(SOURCE):
         print("entry image missing: %s" % SOURCE, file=sys.stderr)
         return 1
+    with open(SOURCE, "rb") as fh:
+        magic = fh.read(8)
+    if magic != b"\x89PNG\r\n\x1a\n":
+        print("entry image is not a PNG: %s" % SOURCE, file=sys.stderr)
+        return 1
     os.makedirs(OUT_DIR, exist_ok=True)
     shutil.copyfile(SOURCE, TARGET)
+    if os.path.getsize(TARGET) != os.path.getsize(SOURCE):
+        print("copy size mismatch: %s" % TARGET, file=sys.stderr)
+        return 1
     print("news-image-20261118: copied entry.png (%s) -> %s" % (SOURCE, TARGET))
     return 0
 
