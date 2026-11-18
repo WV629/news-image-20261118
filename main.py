@@ -1,0 +1,41 @@
+# news-image-20261118 — "The World in One Page"
+# Entrypoint: copies the committed entry.png to the output directory
+# the harness expects (MAKEFUN_OUTPUT_DIR, or /output as a fallback).
+# Python 3.13, standard library only, no network, fully deterministic:
+# the same bytes go in, the same bytes come out, every run.
+#
+# The image is a one-page newspaper front page summing up Wednesday
+# 18 November 2026: drones over the Gulf, the Crimea bridge hit again,
+# Trump landing in Manila, the Dow diving as Nvidia beats, Xi meeting
+# Carney, plus the day's other stories. It was drawn in code (see
+# render.py in the build session) and committed here as entry.png.
+
+import os
+import shutil
+import sys
+
+# Resolve the directory this file lives in, so the copy works no
+# matter which working directory the harness runs us from.
+HERE = os.path.dirname(os.path.abspath(__file__))
+SOURCE = os.path.join(HERE, "entry.png")
+
+# The harness sets MAKEFUN_OUTPUT_DIR; /output is the documented
+# fallback when it is not set. An empty or whitespace-only value
+# counts as unset, so a stray blank env var cannot send the image
+# to a relative or empty path.
+OUT_DIR = (os.environ.get("MAKEFUN_OUTPUT_DIR") or "").strip() or "/output"
+TARGET = os.path.join(OUT_DIR, "entry.png")
+
+
+def main():
+    if not os.path.isfile(SOURCE):
+        print("entry image missing: %s" % SOURCE, file=sys.stderr)
+        return 1
+    os.makedirs(OUT_DIR, exist_ok=True)
+    shutil.copyfile(SOURCE, TARGET)
+    print("news-image-20261118: copied entry.png (%s) -> %s" % (SOURCE, TARGET))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
